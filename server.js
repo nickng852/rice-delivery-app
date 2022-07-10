@@ -33,7 +33,7 @@ const waypoints = [
   },
 ];
 
-server({ security: { csrf: false }, port: 3001 }, [
+server({ security: { csrf: false }, port: 4001 }, [
   () => header("Access-Control-Allow-Origin", "*"),
   () =>
     header(

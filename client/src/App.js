@@ -1,5 +1,21 @@
-import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
-const App = () => <div className="text-red-500">Rice Delivery App</div>;
+import Layout from "./styles/Layout";
+
+import MainPage from "./pages/MainPage";
+
+const App = () => {
+  return (
+    <>
+      <Router>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route path="/" exact element={<MainPage />} />
+          </Route>
+        </Routes>
+      </Router>
+    </>
+  );
+};
 
 export default App;
