@@ -4,18 +4,11 @@
   "private": true,
   "dependencies": {
     "concurrently": "^6.0.2",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
     "server": "^1.0.4"
   },
-  "devDependencies": {
-    "react-scripts": "^4.0.3"
-  },
   "scripts": {
-    "start": "concurrently -n server,app -c green,cyan \"node server.js\" \"react-scripts start\""
-  },
-  "eslintConfig": {
-    "extends": "react-app"
+    "start": "concurrently -n server,app -c green,cyan \"node server.js\" \"cd client && npm run start\"",
+    "build": "cd client && npm run build"
   },
   "browserslist": {
     "production": [
