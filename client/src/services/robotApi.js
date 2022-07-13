@@ -7,10 +7,23 @@ export const robotApi = createApi({
   baseQuery: fetchBaseQuery({ baseUrl }),
   endpoints: (builder) => ({
     getStatus: builder.query({ query: () => "/status" }),
+    getMapWaypoints: builder.query({ query: () => "/map-waypoints" }),
     postLid: builder.mutation({
       query: (lid) => ({ url: "/set-lid", method: "POST", body: lid }),
+    }),
+    postGoal: builder.mutation({
+      query: (location) => ({
+        url: "/set-goal",
+        method: "POST",
+        body: location,
+      }),
     }),
   }),
 });
 
-export const { useGetStatusQuery, usePostLidMutation } = robotApi;
+export const {
+  useGetStatusQuery,
+  useGetMapWaypointsQuery,
+  usePostLidMutation,
+  usePostGoalMutation,
+} = robotApi;
