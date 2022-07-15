@@ -15,10 +15,12 @@ import {
 import { upperCaseFirstChar } from "utils/wordFormatter";
 
 const MainPage = () => {
-  const [lid, setLid] = useState("");
+  const [batteryLevel, setBatteryLevel] = useState("");
   const [waypoints, setWaypoints] = useState("");
   const [currentLocation, setCurrentLocation] = useState("Home");
   const [targetLocation, setTargetLocation] = useState("Home");
+  const [lid, setLid] = useState("");
+  const [deliveryStatus, setDeliveryStatus] = useState("Stand By");
   const [error, setError] = useState(null);
 
   const { data: status, isFetching: isStatusFetching } = useGetStatusQuery();
@@ -27,16 +29,15 @@ const MainPage = () => {
   const [postLid, { isLoading: isLidPosting }] = usePostLidMutation();
   const [postGoal, { isLoading: isGoalPosting }] = usePostGoalMutation();
 
-  const openLid = () => {
+  const openLid = async () => {
     if (lid === "Open") {
-      setError("The lid is already opend.");
       return;
     }
 
     postLid({ lid: "Open" })
       .then(() => {
         setLid("Open");
-        setError("The lid is now opened.");
+        setDeliveryStatus("Ready for fill");
       })
       .catch((error) => {
         console.log(error);
@@ -45,14 +46,13 @@ const MainPage = () => {
 
   const closeLid = () => {
     if (lid === "Close") {
-      setError("The lid is already closed.");
       return;
     }
 
     postLid({ lid: "Close" })
       .then(() => {
         setLid("Close");
-        setError("The lid is now closed.");
+        setDeliveryStatus("Ready for delivery");
       })
       .catch((error) => {
         console.log(error);
@@ -71,6 +71,7 @@ const MainPage = () => {
     postGoal({ waypoint: targetLocation })
       .then(() => {
         setCurrentLocation(targetLocation);
+        setDeliveryStatus("Arrived");
       })
       .catch((error) => {
         console.log(error);
@@ -78,9 +79,48 @@ const MainPage = () => {
   };
 
   useEffect(() => {
+    setBatteryLevel(status?.charge);
     setLid(upperCaseFirstChar(status?.lid));
     setWaypoints(mapWaypoints);
   }, [status, mapWaypoints]);
+
+  useEffect(() => {
+    if (currentLocation === "Home" && lid === "Close") {
+      setDeliveryStatus("Stand By");
+    }
+
+    // Open lid automatically when arrived target location
+    if (
+      targetLocation === currentLocation &&
+      currentLocation !== "Home" &&
+      deliveryStatus === "Arrived"
+    ) {
+      postLid({ lid: "Open" })
+        .then(() => {
+          setLid("Open");
+          setDeliveryStatus("Ready to fill");
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
+
+    // Back to orginal location when delivery is done and the lid is closed
+    if (
+      targetLocation === currentLocation &&
+      currentLocation !== "Home" &&
+      deliveryStatus === "Ready for delivery" &&
+      lid === "Close"
+    ) {
+      postGoal({ waypoint: "Home" })
+        .then(() => {
+          setCurrentLocation("Home");
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
+  }, [postLid, postGoal, currentLocation, targetLocation, lid, deliveryStatus]);
 
   return (
     <main>
@@ -88,11 +128,21 @@ const MainPage = () => {
         <>
           <div className="space-y-4">
             <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+              <div>Battery Level: {batteryLevel}</div>
               <div>Current Location: {currentLocation}</div>
               <div>Lid Status: {lid}</div>
+              <div>Status: {deliveryStatus}</div>
             </div>
-            <Button text="Open Lid" onClick={openLid} />
-            <Button text="Close Lid" onClick={closeLid} />
+            <Button
+              text="Open Lid"
+              onClick={openLid}
+              disabled={lid === "Open"}
+            />
+            <Button
+              text="Close Lid"
+              onClick={closeLid}
+              disabled={lid === "Close"}
+            />
 
             <Dropdown
               targetLocation={targetLocation}
@@ -105,14 +155,23 @@ const MainPage = () => {
         </>
       )}
 
-      {(isStatusFetching ||
-        isMapWaypointsFetching ||
-        isLidPosting ||
-        isGoalPosting) && (
+      {isGoalPosting && (
         <>
           <main
-            className={`absolute inset-0 flex justify-center items-center ${
-              (isLidPosting || isGoalPosting) && "bg-gray-50 opacity-20"
+            className={`absolute inset-0 flex justify-center bg-white items-center space-y-4 flex-col
+            }`}
+          >
+            <Spinner />
+            <div>Please wait. Robot are under way...</div>
+          </main>
+        </>
+      )}
+
+      {(isStatusFetching || isMapWaypointsFetching || isLidPosting) && (
+        <>
+          <main
+            className={`absolute inset-0 flex justify-center bg-white items-center ${
+              isLidPosting && "opacity-50"
             }`}
           >
             <Spinner />
