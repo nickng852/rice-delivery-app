@@ -2,9 +2,14 @@ import { useState, useEffect } from "react";
 
 // Components
 import Spinner from "components/loader/Spinner";
+import Card from "components/card/Card";
 import Button from "components/button/Button";
 import Dropdown from "components/dropdown/Dropdown";
 import Modal from "components/modal/ErrorModal";
+
+// FontAwesome
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faBoxOpen, faBox } from "@fortawesome/free-solid-svg-icons";
 
 // API
 import {
@@ -20,7 +25,7 @@ import { upperCaseFirstChar } from "utils/wordFormatter";
 const MainPage = () => {
   const [waypoints, setWaypoints] = useState("");
   const [currentLocation, setCurrentLocation] = useState("Home");
-  const [targetLocation, setTargetLocation] = useState("Home");
+  const [targetLocation, setTargetLocation] = useState("Choose a destination");
   const [lid, setLid] = useState("");
   const [deliveryStatus, setDeliveryStatus] = useState("Stand By");
   const [error, setError] = useState(null);
@@ -80,6 +85,9 @@ const MainPage = () => {
     } else if (lid === "Open") {
       setError("Please close the lid before delivery.");
       return;
+    } else if (targetLocation === "Choose a destination") {
+      setError("Please select destination before delivery.");
+      return;
     } else if (targetLocation === currentLocation) {
       setError("Target destination cannot be the same with current location.");
       return;
@@ -113,6 +121,8 @@ const MainPage = () => {
       currentLocation !== "Home" &&
       deliveryStatus === "Arrived"
     ) {
+      setReminder("Lid are now opening...");
+
       postLid({ lid: "Open" })
         .then(() => {
           setLid("Open");
@@ -133,6 +143,7 @@ const MainPage = () => {
       postGoal({ waypoint: "Home" })
         .then(() => {
           setCurrentLocation("Home");
+          setTargetLocation("Choose a destination");
         })
         .catch((error) => {
           console.log(error);
@@ -141,56 +152,43 @@ const MainPage = () => {
   }, [postLid, postGoal, currentLocation, targetLocation, lid, deliveryStatus]);
 
   return (
-    <main>
+    <main className="flex flex-col justify-center portrait:h-full md:landscape:h-full">
       {!isStatusFetching && !isMapWaypointsFetching && (
         <>
           <div className="space-y-4">
-            <div className="flex space-x-4">
-              <div className="w-full space-y-2 rounded-lg bg-gray-50 p-4 dark:bg-gray-700 dark:text-white">
-                <div>Battery Level:</div>
-                <div>{status?.charge}</div>
-              </div>
-              <div className="w-full space-y-2 rounded-lg bg-gray-50 p-4 dark:bg-gray-700 dark:text-white">
-                <div>Status:</div>
-                <div>{status?.online ? "Online" : "Offline"}</div>
-              </div>
-              <div className="w-full space-y-2 rounded-lg bg-gray-50 p-4 dark:bg-gray-700 dark:text-white">
-                <div>Charge:</div>
-                <div>{status?.charging ? "Charging" : "Not charging"}</div>
-              </div>
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+              <Card
+                text="Status"
+                value={status?.online ? "Online" : "Offline"}
+              />
+              <Card
+                text="Charge"
+                value={status?.charging ? "Charging" : "Not charging"}
+              />
+              <Card text="Battery Level" value={status?.charge} />
+              <Card text="Current Location" value={currentLocation} />
+              <Card text="Lid Status" value={lid} />
+              <Card text="Delivery Status" value={deliveryStatus} />
             </div>
-            <div className="flex space-x-4">
-              <div className="w-full space-y-2 rounded-lg bg-gray-50 p-4 dark:bg-gray-700 dark:text-white">
-                <div>Current Location:</div>
-                <div>{currentLocation}</div>
-              </div>
-              <div className="w-full space-y-2 rounded-lg bg-gray-50 p-4 dark:bg-gray-700 dark:text-white">
-                <div>Lid Status:</div>
-                <div>{lid}</div>
-              </div>
-              <div className="w-full space-y-2 rounded-lg bg-gray-50 p-4 dark:bg-gray-700 dark:text-white">
-                <div>Status:</div>
-                <div>{deliveryStatus}</div>
-              </div>
+            <div className="space-y-4 md:flex md:space-x-4 md:space-y-0">
+              <Button
+                text="Open Lid"
+                icon={<FontAwesomeIcon icon={faBoxOpen} />}
+                onClick={openLid}
+                disabled={lid === "Open"}
+              />
+              <Button
+                text="Close Lid"
+                icon={<FontAwesomeIcon icon={faBox} />}
+                onClick={closeLid}
+                disabled={lid === "Close"}
+              />
             </div>
-
-            <Button
-              text="Open Lid"
-              onClick={openLid}
-              disabled={lid === "Open"}
-            />
-            <Button
-              text="Close Lid"
-              onClick={closeLid}
-              disabled={lid === "Close"}
-            />
-
             <Dropdown
               targetLocation={targetLocation}
               setTargetLocation={setTargetLocation}
               waypoints={waypoints}
             />
-
             <Button text="Go" onClick={handleSubmit} />
           </div>
         </>
@@ -198,22 +196,24 @@ const MainPage = () => {
 
       {isGoalPosting && (
         <>
-          <main className="absolute inset-0 flex flex-col items-center justify-center space-y-4 bg-white">
+          <main className="absolute inset-0 flex flex-col items-center justify-center space-y-4 bg-white dark:bg-primary">
             <Spinner />
-            <div>Please wait. Robot are under way...</div>
+            <div className="text-sm dark:text-white md:text-base">
+              Please wait. Robot are under way...
+            </div>
           </main>
         </>
       )}
 
       {(isStatusFetching || isMapWaypointsFetching || isLidPosting) && (
         <>
-          <main
-            className={`absolute inset-0 flex flex-col items-center justify-center space-y-4 bg-white ${
-              isLidPosting && "bg-gray-100/50"
-            }`}
-          >
+          <main className="absolute inset-0 flex flex-col items-center justify-center space-y-4 bg-white dark:bg-primary">
             <Spinner />
-            {isLidPosting && <div>{reminder}</div>}
+            {isLidPosting && (
+              <div className="text-sm dark:text-white md:text-base">
+                {reminder}
+              </div>
+            )}
           </main>
         </>
       )}

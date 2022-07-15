@@ -7,17 +7,14 @@ const Dropdown = ({ targetLocation, setTargetLocation, waypoints }) => {
 
   return (
     <>
-      <label
-        htmlFor="destinations"
-        className="mb-2 block text-base font-medium text-gray-900 dark:text-gray-400"
-      >
+      <label className="mb-2 block text-sm font-medium text-gray-900 dark:text-gray-400 md:text-base">
         Select destination
       </label>
 
       <select
         id="destinations"
-        className="block w-full rounded-lg border border-gray-300 bg-gray-50 py-3 px-4 text-base text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
         value={targetLocation}
+        className="block w-full rounded-lg bg-white py-3 px-4 text-base text-gray-900 shadow-sm drop-shadow-sm focus:outline-none dark:border-gray-600 dark:bg-tertiary dark:text-white"
         onChange={handleChange}
       >
         <option defaultValue>Choose a destination</option>
