@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-const Modal = ({ error, setError }) => {
+const Modal = ({ error, setError, text }) => {
   const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
@@ -70,7 +70,7 @@ const Modal = ({ error, setError }) => {
                   className="rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-sm font-medium text-gray-500  transition-all hover:bg-gray-100 hover:text-gray-900 focus:z-10 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:border-gray-500 dark:bg-secondary dark:text-gray-300 dark:hover:bg-tertiary dark:hover:text-white dark:focus:ring-gray-600 md:text-base"
                   onClick={modalToggle}
                 >
-                  Confirm
+                  {text}
                 </button>
               </div>
             </div>

@@ -1,5 +1,8 @@
 import { useState, useEffect } from "react";
 
+// Translation
+import { useTranslation } from "react-i18next";
+
 // Components
 import Spinner from "components/loader/Spinner";
 import Card from "components/card/Card";
@@ -28,11 +31,14 @@ import {
 import { upperCaseFirstChar } from "utils/wordFormatter";
 
 const MainPage = () => {
+  // Translation
+  const { t, i18n } = useTranslation();
+
   const [waypoints, setWaypoints] = useState("");
   const [currentLocation, setCurrentLocation] = useState("Home");
-  const [targetLocation, setTargetLocation] = useState("Choose a destination");
+  const [targetLocation, setTargetLocation] = useState(t("chooseDestination"));
   const [lid, setLid] = useState("");
-  const [deliveryStatus, setDeliveryStatus] = useState("Stand By");
+  const [deliveryStatus, setDeliveryStatus] = useState(t("standBy"));
   const [error, setError] = useState(null);
   const [reminder, setReminder] = useState(null);
 
@@ -48,12 +54,12 @@ const MainPage = () => {
       return;
     }
 
-    setReminder("Lid is now opening...");
+    setReminder(t("lidOpening"));
 
     postLid({ lid: "Open" })
       .then(() => {
-        setLid("Open");
-        setDeliveryStatus("Ready for fill");
+        setLid(t("lidOpen"));
+        setDeliveryStatus(t("readyToFill"));
       })
       .catch((error) => {
         console.log(error);
@@ -65,12 +71,12 @@ const MainPage = () => {
       return;
     }
 
-    setReminder("Lid is now closing...");
+    setReminder(t("lidClosing"));
 
     postLid({ lid: "Close" })
       .then(() => {
-        setLid("Close");
-        setDeliveryStatus("Ready for delivery");
+        setLid(t("lidClose"));
+        setDeliveryStatus(t("readyForDelivery"));
       })
       .catch((error) => {
         console.log(error);
@@ -79,33 +85,33 @@ const MainPage = () => {
 
   const handleSubmit = () => {
     if (status?.online === false) {
-      setError("Robot is currently offline.");
+      setError(t("robotOffline"));
       return;
     } else if (status?.charging === true) {
-      setError("Robot is currently charging.");
+      setError(t("robotCharging"));
       return;
     } else if (status?.charge <= 2) {
-      setError("Battery Level are low.");
+      setError(t("robotBatteryLow"));
       return;
-    } else if (lid === "Open") {
-      setError("Please close the lid before delivery.");
+    } else if (lid === t("lidOpen")) {
+      setError(t("robotNotClose"));
       return;
-    } else if (targetLocation === "Choose a destination") {
-      setError("Please select destination before delivery.");
+    } else if (targetLocation === t("chooseDestination")) {
+      setError(t("noDestination"));
       return;
     } else if (targetLocation === currentLocation) {
-      setError("Target destination cannot be the same with current location.");
+      setError(t("destinationConflict"));
       return;
     }
 
-    let reminderText = "Please wait... Robot is now going to " + targetLocation;
+    let reminderText = t("transitionText") + targetLocation;
 
     setReminder(reminderText);
 
     postGoal({ waypoint: targetLocation })
       .then(() => {
         setCurrentLocation(targetLocation);
-        setDeliveryStatus("Arrived");
+        setDeliveryStatus(t("arrived"));
       })
       .catch((error) => {
         console.log(error);
@@ -114,28 +120,33 @@ const MainPage = () => {
 
   // Set State after API call
   useEffect(() => {
-    setLid(upperCaseFirstChar(status?.lid));
+    if (upperCaseFirstChar(status?.lid) === "Open") {
+      setLid(t("lidOpen"));
+    } else if (upperCaseFirstChar(status?.lid) === "Close") {
+      setLid(t("lidClose"));
+    }
+
     setWaypoints(mapWaypoints);
-  }, [status, mapWaypoints]);
+  }, [t, status, mapWaypoints]);
 
   // Other logic
   useEffect(() => {
-    if (currentLocation === "Home" && lid === "Close") {
-      setDeliveryStatus("Stand By");
+    if (currentLocation === "Home" && lid === t("lidClose")) {
+      setDeliveryStatus(t("standBy"));
     }
 
     // Open lid automatically when arrived target location
     if (
       targetLocation === currentLocation &&
       currentLocation !== "Home" &&
-      deliveryStatus === "Arrived"
+      deliveryStatus === t("arrived")
     ) {
-      setReminder("Lid are now opening...");
+      setReminder(t("lidOpening"));
 
       postLid({ lid: "Open" })
         .then(() => {
-          setLid("Open");
-          setDeliveryStatus("Ready to fill");
+          setLid(t("lidOpen"));
+          setDeliveryStatus(t("readyToFill"));
         })
         .catch((error) => {
           console.log(error);
@@ -146,68 +157,101 @@ const MainPage = () => {
     if (
       targetLocation === currentLocation &&
       currentLocation !== "Home" &&
-      deliveryStatus === "Ready for delivery" &&
-      lid === "Close"
+      deliveryStatus === t("readyForDelivery") &&
+      lid === t("lidClose")
     ) {
-      let reminderText = "Please wait... Robot is now going to Home";
-
-      setReminder(reminderText);
+      setReminder(t("transitionHomeText"));
 
       postGoal({ waypoint: "Home" })
         .then(() => {
           setCurrentLocation("Home");
-          setTargetLocation("Choose a destination");
+          setTargetLocation(t("chooseDestination"));
         })
         .catch((error) => {
           console.log(error);
         });
     }
-  }, [postLid, postGoal, currentLocation, targetLocation, lid, deliveryStatus]);
+  }, [
+    t,
+    postLid,
+    postGoal,
+    currentLocation,
+    targetLocation,
+    lid,
+    deliveryStatus,
+  ]);
 
   return (
     <main className="flex flex-col justify-center portrait:h-full lg:landscape:h-full">
       {!isStatusFetching && !isMapWaypointsFetching && (
         <>
           <div className="space-y-4">
+            <div className="flex space-x-4">
+              <button
+                value="en"
+                text={"English"}
+                className="cursor-pointer"
+                onClick={(e) => {
+                  i18n.changeLanguage(e.target.value);
+                }}
+              >
+                English
+              </button>
+              <button
+                value="tc"
+                text={"繁體中文"}
+                className="cursor-pointer"
+                onClick={(e) => {
+                  i18n.changeLanguage(e.target.value);
+                }}
+              >
+                繁體中文
+              </button>
+            </div>
+
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
               <Card
-                text="Status"
-                value={status?.online ? "Online" : "Offline"}
+                text={t("status")}
+                value={status?.online ? t("online") : t("offline")}
               />
               <Card
-                text="Charge"
-                value={status?.charging ? "Charging" : "Not charging"}
+                text={t("charge")}
+                value={status?.charging ? t("charging") : t("notCharging")}
               />
-              <Card text="Battery Level" value={status?.charge + "%"} />
+              <Card text={t("batteryLevel")} value={status?.charge + "%"} />
               <Card
-                text="Current Location"
+                text={t("currentLocation")}
                 icon={<FontAwesomeIcon icon={faLocationDot} />}
                 value={currentLocation}
               />
-              <Card text="Lid Status" value={lid} />
-              <Card text="Delivery Status" value={deliveryStatus} />
+              <Card text={t("lidStatus")} value={lid} />
+              <Card text={t("deliveryStatus")} value={deliveryStatus} />
             </div>
             <div className="space-y-4 md:flex md:space-x-4 md:space-y-0">
               <Button
-                text="Open Lid"
+                text={t("openLid")}
                 icon={<FontAwesomeIcon icon={faBoxOpen} />}
                 onClick={openLid}
-                disabled={lid === "Open"}
+                disabled={lid === t("lidOpen")}
               />
               <Button
-                text="Close Lid"
+                text={t("closeLid")}
                 icon={<FontAwesomeIcon icon={faBox} />}
                 onClick={closeLid}
-                disabled={lid === "Close"}
+                disabled={lid === t("lidClose")}
               />
             </div>
             <Dropdown
-              targetLocation={targetLocation}
-              setTargetLocation={setTargetLocation}
-              waypoints={waypoints}
+              labelText={t("chooseDestination")}
+              value={targetLocation}
+              defaultOption={t("chooseDestination")}
+              options={waypoints}
+              handleChange={(e) => {
+                setTargetLocation(e.target.value);
+              }}
             />
             <Button
-              text="Go"
+              text={t("go")}
               icon={<FontAwesomeIcon icon={faRobot} />}
               onClick={handleSubmit}
             />
@@ -239,7 +283,7 @@ const MainPage = () => {
         </>
       )}
 
-      {error && <Modal error={error} setError={setError} />}
+      {error && <Modal error={error} setError={setError} text={t("confirm")} />}
     </main>
   );
 };
