@@ -9,7 +9,12 @@ import Modal from "components/modal/ErrorModal";
 
 // FontAwesome
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBoxOpen, faBox } from "@fortawesome/free-solid-svg-icons";
+import {
+  faLocationDot,
+  faBoxOpen,
+  faBox,
+  faRobot,
+} from "@fortawesome/free-solid-svg-icons";
 
 // API
 import {
@@ -43,7 +48,7 @@ const MainPage = () => {
       return;
     }
 
-    setReminder("Lid are now opening...");
+    setReminder("Lid is now opening...");
 
     postLid({ lid: "Open" })
       .then(() => {
@@ -60,7 +65,7 @@ const MainPage = () => {
       return;
     }
 
-    setReminder("Lid are now closing...");
+    setReminder("Lid is now closing...");
 
     postLid({ lid: "Close" })
       .then(() => {
@@ -74,10 +79,10 @@ const MainPage = () => {
 
   const handleSubmit = () => {
     if (status?.online === false) {
-      setError("Robot are currently offline.");
+      setError("Robot is currently offline.");
       return;
     } else if (status?.charging === true) {
-      setError("Robot are currently charging.");
+      setError("Robot is currently charging.");
       return;
     } else if (status?.charge <= 2) {
       setError("Battery Level are low.");
@@ -92,6 +97,10 @@ const MainPage = () => {
       setError("Target destination cannot be the same with current location.");
       return;
     }
+
+    let reminderText = "Please wait... Robot is now going to " + targetLocation;
+
+    setReminder(reminderText);
 
     postGoal({ waypoint: targetLocation })
       .then(() => {
@@ -140,6 +149,10 @@ const MainPage = () => {
       deliveryStatus === "Ready for delivery" &&
       lid === "Close"
     ) {
+      let reminderText = "Please wait... Robot is now going to Home";
+
+      setReminder(reminderText);
+
       postGoal({ waypoint: "Home" })
         .then(() => {
           setCurrentLocation("Home");
@@ -152,7 +165,7 @@ const MainPage = () => {
   }, [postLid, postGoal, currentLocation, targetLocation, lid, deliveryStatus]);
 
   return (
-    <main className="flex flex-col justify-center portrait:h-full md:landscape:h-full">
+    <main className="flex flex-col justify-center portrait:h-full lg:landscape:h-full">
       {!isStatusFetching && !isMapWaypointsFetching && (
         <>
           <div className="space-y-4">
@@ -165,8 +178,12 @@ const MainPage = () => {
                 text="Charge"
                 value={status?.charging ? "Charging" : "Not charging"}
               />
-              <Card text="Battery Level" value={status?.charge} />
-              <Card text="Current Location" value={currentLocation} />
+              <Card text="Battery Level" value={status?.charge + "%"} />
+              <Card
+                text="Current Location"
+                icon={<FontAwesomeIcon icon={faLocationDot} />}
+                value={currentLocation}
+              />
               <Card text="Lid Status" value={lid} />
               <Card text="Delivery Status" value={deliveryStatus} />
             </div>
@@ -189,7 +206,11 @@ const MainPage = () => {
               setTargetLocation={setTargetLocation}
               waypoints={waypoints}
             />
-            <Button text="Go" onClick={handleSubmit} />
+            <Button
+              text="Go"
+              icon={<FontAwesomeIcon icon={faRobot} />}
+              onClick={handleSubmit}
+            />
           </div>
         </>
       )}
@@ -199,7 +220,7 @@ const MainPage = () => {
           <main className="absolute inset-0 flex flex-col items-center justify-center space-y-4 bg-white dark:bg-primary">
             <Spinner />
             <div className="text-sm dark:text-white md:text-base">
-              Please wait. Robot are under way...
+              {reminder}
             </div>
           </main>
         </>

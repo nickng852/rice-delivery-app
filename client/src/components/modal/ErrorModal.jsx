@@ -25,7 +25,7 @@ const Modal = ({ error, setError }) => {
           className="absolute inset-0 flex items-center justify-center"
           aria-hidden="true"
         >
-          <div className="relative h-full w-full max-w-md p-4 md:h-auto">
+          <div className="relative h-auto w-full max-w-md p-4">
             <div className="relative rounded-lg bg-white shadow dark:bg-secondary">
               <button
                 type="button"
