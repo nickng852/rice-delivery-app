@@ -25,16 +25,16 @@ const Modal = ({ error, setError }) => {
           className="absolute inset-0 flex items-center justify-center"
           aria-hidden="true"
         >
-          <div className="relative p-4 w-full max-w-md h-full md:h-auto">
-            <div className="relative bg-white rounded-lg shadow dark:bg-gray-700">
+          <div className="relative h-full w-full max-w-md p-4 md:h-auto">
+            <div className="relative rounded-lg bg-white shadow dark:bg-gray-700">
               <button
                 type="button"
-                className="absolute top-3 right-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-800 dark:hover:text-white"
+                className="absolute top-3 right-2.5 ml-auto inline-flex items-center rounded-lg bg-transparent p-1.5 text-sm text-gray-400 hover:bg-gray-200 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-white"
                 data-modal-toggle="popup-modal"
                 onClick={modalToggle}
               >
                 <svg
-                  className="w-5 h-5"
+                  className="h-5 w-5"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                   xmlns="http://www.w3.org/2000/svg"
@@ -48,7 +48,7 @@ const Modal = ({ error, setError }) => {
               </button>
               <div className="p-6 text-center">
                 <svg
-                  className="mx-auto mb-4 w-14 h-14 text-gray-400 dark:text-gray-200"
+                  className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -67,7 +67,7 @@ const Modal = ({ error, setError }) => {
                 <button
                   data-modal-toggle="popup-modal"
                   type="button"
-                  className="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600"
+                  className="rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-sm font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-900 focus:z-10 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:border-gray-500 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white dark:focus:ring-gray-600"
                   onClick={modalToggle}
                 >
                   Confirm

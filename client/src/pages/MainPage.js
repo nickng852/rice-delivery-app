@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 
+// Components
 import Spinner from "components/loader/Spinner";
 import Button from "components/button/Button";
 import Dropdown from "components/dropdown/Dropdown";
 import Modal from "components/modal/ErrorModal";
 
+// API
 import {
   useGetStatusQuery,
   useGetMapWaypointsQuery,
@@ -12,17 +14,19 @@ import {
   usePostGoalMutation,
 } from "services/robotApi";
 
+// Utils
 import { upperCaseFirstChar } from "utils/wordFormatter";
 
 const MainPage = () => {
-  const [batteryLevel, setBatteryLevel] = useState("");
   const [waypoints, setWaypoints] = useState("");
   const [currentLocation, setCurrentLocation] = useState("Home");
   const [targetLocation, setTargetLocation] = useState("Home");
   const [lid, setLid] = useState("");
   const [deliveryStatus, setDeliveryStatus] = useState("Stand By");
   const [error, setError] = useState(null);
+  const [reminder, setReminder] = useState(null);
 
+  // API
   const { data: status, isFetching: isStatusFetching } = useGetStatusQuery();
   const { data: mapWaypoints, isFetching: isMapWaypointsFetching } =
     useGetMapWaypointsQuery();
@@ -33,6 +37,8 @@ const MainPage = () => {
     if (lid === "Open") {
       return;
     }
+
+    setReminder("Lid are now opening...");
 
     postLid({ lid: "Open" })
       .then(() => {
@@ -49,6 +55,8 @@ const MainPage = () => {
       return;
     }
 
+    setReminder("Lid are now closing...");
+
     postLid({ lid: "Close" })
       .then(() => {
         setLid("Close");
@@ -60,8 +68,17 @@ const MainPage = () => {
   };
 
   const handleSubmit = () => {
-    if (lid === "Open") {
-      setError("Please close the lid before delivery");
+    if (status?.online === false) {
+      setError("Robot are currently offline.");
+      return;
+    } else if (status?.charging === true) {
+      setError("Robot are currently charging.");
+      return;
+    } else if (status?.charge <= 2) {
+      setError("Battery Level are low.");
+      return;
+    } else if (lid === "Open") {
+      setError("Please close the lid before delivery.");
       return;
     } else if (targetLocation === currentLocation) {
       setError("Target destination cannot be the same with current location.");
@@ -78,12 +95,13 @@ const MainPage = () => {
       });
   };
 
+  // Set State after API call
   useEffect(() => {
-    setBatteryLevel(status?.charge);
     setLid(upperCaseFirstChar(status?.lid));
     setWaypoints(mapWaypoints);
   }, [status, mapWaypoints]);
 
+  // Other logic
   useEffect(() => {
     if (currentLocation === "Home" && lid === "Close") {
       setDeliveryStatus("Stand By");
@@ -127,12 +145,35 @@ const MainPage = () => {
       {!isStatusFetching && !isMapWaypointsFetching && (
         <>
           <div className="space-y-4">
-            <div className="bg-gray-50 p-4 rounded-lg space-y-2">
-              <div>Battery Level: {batteryLevel}</div>
-              <div>Current Location: {currentLocation}</div>
-              <div>Lid Status: {lid}</div>
-              <div>Status: {deliveryStatus}</div>
+            <div className="flex space-x-4">
+              <div className="w-full space-y-2 rounded-lg bg-gray-50 p-4 dark:bg-gray-700 dark:text-white">
+                <div>Battery Level:</div>
+                <div>{status?.charge}</div>
+              </div>
+              <div className="w-full space-y-2 rounded-lg bg-gray-50 p-4 dark:bg-gray-700 dark:text-white">
+                <div>Status:</div>
+                <div>{status?.online ? "Online" : "Offline"}</div>
+              </div>
+              <div className="w-full space-y-2 rounded-lg bg-gray-50 p-4 dark:bg-gray-700 dark:text-white">
+                <div>Charge:</div>
+                <div>{status?.charging ? "Charging" : "Not charging"}</div>
+              </div>
             </div>
+            <div className="flex space-x-4">
+              <div className="w-full space-y-2 rounded-lg bg-gray-50 p-4 dark:bg-gray-700 dark:text-white">
+                <div>Current Location:</div>
+                <div>{currentLocation}</div>
+              </div>
+              <div className="w-full space-y-2 rounded-lg bg-gray-50 p-4 dark:bg-gray-700 dark:text-white">
+                <div>Lid Status:</div>
+                <div>{lid}</div>
+              </div>
+              <div className="w-full space-y-2 rounded-lg bg-gray-50 p-4 dark:bg-gray-700 dark:text-white">
+                <div>Status:</div>
+                <div>{deliveryStatus}</div>
+              </div>
+            </div>
+
             <Button
               text="Open Lid"
               onClick={openLid}
@@ -157,10 +198,7 @@ const MainPage = () => {
 
       {isGoalPosting && (
         <>
-          <main
-            className={`absolute inset-0 flex justify-center bg-white items-center space-y-4 flex-col
-            }`}
-          >
+          <main className="absolute inset-0 flex flex-col items-center justify-center space-y-4 bg-white">
             <Spinner />
             <div>Please wait. Robot are under way...</div>
           </main>
@@ -170,11 +208,12 @@ const MainPage = () => {
       {(isStatusFetching || isMapWaypointsFetching || isLidPosting) && (
         <>
           <main
-            className={`absolute inset-0 flex justify-center bg-white items-center ${
-              isLidPosting && "opacity-50"
+            className={`absolute inset-0 flex flex-col items-center justify-center space-y-4 bg-white ${
+              isLidPosting && "bg-gray-100/50"
             }`}
           >
             <Spinner />
+            {isLidPosting && <div>{reminder}</div>}
           </main>
         </>
       )}
