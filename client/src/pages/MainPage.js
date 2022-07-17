@@ -36,9 +36,9 @@ const MainPage = () => {
 
   const [waypoints, setWaypoints] = useState("");
   const [currentLocation, setCurrentLocation] = useState("Home");
-  const [targetLocation, setTargetLocation] = useState(t("chooseDestination"));
+  const [targetLocation, setTargetLocation] = useState("");
   const [lid, setLid] = useState("");
-  const [deliveryStatus, setDeliveryStatus] = useState(t("standBy"));
+  const [deliveryStatus, setDeliveryStatus] = useState("Stand By");
   const [error, setError] = useState(null);
   const [reminder, setReminder] = useState(null);
 
@@ -49,7 +49,7 @@ const MainPage = () => {
   const [postLid, { isLoading: isLidPosting }] = usePostLidMutation();
   const [postGoal, { isLoading: isGoalPosting }] = usePostGoalMutation();
 
-  const openLid = async () => {
+  const openLid = () => {
     if (lid === "Open") {
       return;
     }
@@ -59,7 +59,7 @@ const MainPage = () => {
     postLid({ lid: "Open" })
       .then(() => {
         setLid("Open");
-        setDeliveryStatus(t("readyToFill"));
+        setDeliveryStatus("Ready to fill");
       })
       .catch((error) => {
         console.log(error);
@@ -76,7 +76,7 @@ const MainPage = () => {
     postLid({ lid: "Close" })
       .then(() => {
         setLid("Close");
-        setDeliveryStatus(t("readyForDelivery"));
+        setDeliveryStatus("Ready for delivery");
       })
       .catch((error) => {
         console.log(error);
@@ -93,10 +93,10 @@ const MainPage = () => {
     } else if (status?.charge <= 10) {
       setError(t("robotBatteryLow"));
       return;
-    } else if (lid === t("lidOpen")) {
+    } else if (lid === "Open") {
       setError(t("robotNotClose"));
       return;
-    } else if (targetLocation === t("chooseDestination")) {
+    } else if (targetLocation === "") {
       setError(t("noDestination"));
       return;
     } else if (targetLocation === currentLocation) {
@@ -111,7 +111,7 @@ const MainPage = () => {
     postGoal({ waypoint: targetLocation })
       .then(() => {
         setCurrentLocation(targetLocation);
-        setDeliveryStatus(t("arrived"));
+        setDeliveryStatus("Arrived");
       })
       .catch((error) => {
         console.log(error);
@@ -127,26 +127,26 @@ const MainPage = () => {
     }
 
     setWaypoints(mapWaypoints);
-  }, [t, status, mapWaypoints]);
+  }, [status, mapWaypoints]);
 
   // Other logic
   useEffect(() => {
     if (currentLocation === "Home" && lid === "Close") {
-      setDeliveryStatus(t("standBy"));
+      setDeliveryStatus("Stand By");
     }
 
     // Open lid automatically when arrived target location
     if (
       targetLocation === currentLocation &&
       currentLocation !== "Home" &&
-      deliveryStatus === t("arrived")
+      deliveryStatus === "Arrived"
     ) {
       setReminder(t("lidOpening"));
 
       postLid({ lid: "Open" })
         .then(() => {
           setLid("Open");
-          setDeliveryStatus(t("readyToFill"));
+          setDeliveryStatus("Ready to fill");
         })
         .catch((error) => {
           console.log(error);
@@ -157,7 +157,7 @@ const MainPage = () => {
     if (
       targetLocation === currentLocation &&
       currentLocation !== "Home" &&
-      deliveryStatus === t("readyForDelivery") &&
+      deliveryStatus === "Ready for delivery" &&
       lid === "Close"
     ) {
       setReminder(t("transitionHomeText"));
@@ -165,7 +165,7 @@ const MainPage = () => {
       postGoal({ waypoint: "Home" })
         .then(() => {
           setCurrentLocation("Home");
-          setTargetLocation(t("chooseDestination"));
+          setTargetLocation("");
         })
         .catch((error) => {
           console.log(error);
@@ -181,7 +181,24 @@ const MainPage = () => {
     deliveryStatus,
   ]);
 
-  console.log(lid);
+  const getDeliveryStatusTranslation = (value) => {
+    switch (value) {
+      case "Ready to fill":
+        return t("readyToFill");
+
+      case "Ready for delivery":
+        return t("readyForDelivery");
+
+      case "Stand By":
+        return t("standBy");
+
+      case "Arrived":
+        return t("arrived");
+
+      default:
+        return "";
+    }
+  };
 
   return (
     <main className="flex flex-col justify-center portrait:h-full lg:landscape:h-full">
@@ -192,7 +209,7 @@ const MainPage = () => {
               <button
                 value="en"
                 text={"English"}
-                className="cursor-pointer"
+                className="cursor-pointer dark:text-white"
                 onClick={(e) => {
                   i18n.changeLanguage(e.target.value);
                 }}
@@ -202,7 +219,7 @@ const MainPage = () => {
               <button
                 value="tc"
                 text={"繁體中文"}
-                className="cursor-pointer"
+                className="cursor-pointer dark:text-white"
                 onClick={(e) => {
                   i18n.changeLanguage(e.target.value);
                 }}
@@ -230,7 +247,10 @@ const MainPage = () => {
                 text={t("lidStatus")}
                 value={lid === "Open" ? t("lidOpen") : t("lidClose")}
               />
-              <Card text={t("deliveryStatus")} value={deliveryStatus} />
+              <Card
+                text={t("deliveryStatus")}
+                value={getDeliveryStatusTranslation(deliveryStatus)}
+              />
             </div>
             <div className="space-y-4 md:flex md:space-x-4 md:space-y-0">
               <Button
