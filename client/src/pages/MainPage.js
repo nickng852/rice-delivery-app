@@ -209,7 +209,7 @@ const MainPage = () => {
               <button
                 value="en"
                 text={"English"}
-                className="cursor-pointer dark:text-white"
+                className="cursor-pointer text-sm dark:text-white md:text-base md:font-medium"
                 onClick={(e) => {
                   i18n.changeLanguage(e.target.value);
                 }}
@@ -219,7 +219,7 @@ const MainPage = () => {
               <button
                 value="tc"
                 text={"繁體中文"}
-                className="cursor-pointer dark:text-white"
+                className="cursor-pointer text-sm dark:text-white md:text-base md:font-medium"
                 onClick={(e) => {
                   i18n.changeLanguage(e.target.value);
                 }}
