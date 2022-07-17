@@ -58,7 +58,7 @@ const MainPage = () => {
 
     postLid({ lid: "Open" })
       .then(() => {
-        setLid(t("lidOpen"));
+        setLid("Open");
         setDeliveryStatus(t("readyToFill"));
       })
       .catch((error) => {
@@ -75,7 +75,7 @@ const MainPage = () => {
 
     postLid({ lid: "Close" })
       .then(() => {
-        setLid(t("lidClose"));
+        setLid("Close");
         setDeliveryStatus(t("readyForDelivery"));
       })
       .catch((error) => {
@@ -90,7 +90,7 @@ const MainPage = () => {
     } else if (status?.charging === true) {
       setError(t("robotCharging"));
       return;
-    } else if (status?.charge <= 2) {
+    } else if (status?.charge <= 10) {
       setError(t("robotBatteryLow"));
       return;
     } else if (lid === t("lidOpen")) {
@@ -121,9 +121,9 @@ const MainPage = () => {
   // Set State after API call
   useEffect(() => {
     if (upperCaseFirstChar(status?.lid) === "Open") {
-      setLid(t("lidOpen"));
+      setLid("Open");
     } else if (upperCaseFirstChar(status?.lid) === "Close") {
-      setLid(t("lidClose"));
+      setLid("Close");
     }
 
     setWaypoints(mapWaypoints);
@@ -131,7 +131,7 @@ const MainPage = () => {
 
   // Other logic
   useEffect(() => {
-    if (currentLocation === "Home" && lid === t("lidClose")) {
+    if (currentLocation === "Home" && lid === "Close") {
       setDeliveryStatus(t("standBy"));
     }
 
@@ -145,7 +145,7 @@ const MainPage = () => {
 
       postLid({ lid: "Open" })
         .then(() => {
-          setLid(t("lidOpen"));
+          setLid("Open");
           setDeliveryStatus(t("readyToFill"));
         })
         .catch((error) => {
@@ -158,7 +158,7 @@ const MainPage = () => {
       targetLocation === currentLocation &&
       currentLocation !== "Home" &&
       deliveryStatus === t("readyForDelivery") &&
-      lid === t("lidClose")
+      lid === "Close"
     ) {
       setReminder(t("transitionHomeText"));
 
@@ -180,6 +180,8 @@ const MainPage = () => {
     lid,
     deliveryStatus,
   ]);
+
+  console.log(lid);
 
   return (
     <main className="flex flex-col justify-center portrait:h-full lg:landscape:h-full">
@@ -224,7 +226,10 @@ const MainPage = () => {
                 icon={<FontAwesomeIcon icon={faLocationDot} />}
                 value={currentLocation}
               />
-              <Card text={t("lidStatus")} value={lid} />
+              <Card
+                text={t("lidStatus")}
+                value={lid === "Open" ? t("lidOpen") : t("lidClose")}
+              />
               <Card text={t("deliveryStatus")} value={deliveryStatus} />
             </div>
             <div className="space-y-4 md:flex md:space-x-4 md:space-y-0">
@@ -232,13 +237,13 @@ const MainPage = () => {
                 text={t("openLid")}
                 icon={<FontAwesomeIcon icon={faBoxOpen} />}
                 onClick={openLid}
-                disabled={lid === t("lidOpen")}
+                disabled={lid === "Open"}
               />
               <Button
                 text={t("closeLid")}
                 icon={<FontAwesomeIcon icon={faBox} />}
                 onClick={closeLid}
-                disabled={lid === t("lidClose")}
+                disabled={lid === "Close"}
               />
             </div>
             <Dropdown
