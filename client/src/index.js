@@ -4,7 +4,7 @@ import App from "./App";
 import "./index.css";
 
 // Transaltion
-import "./utils/i18n";
+import "./utils/i18n.ts";
 
 // Redux
 import store from "./app/store";

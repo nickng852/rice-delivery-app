@@ -1,6 +1,12 @@
+import { FC } from "react";
+
 import { Link } from "react-router-dom";
 
-const ErrorFallback = ({ resetErrorBoundary }) => {
+interface Props {
+  resetErrorBoundary: () => void;
+}
+
+const ErrorFallback: FC<Props> = ({ resetErrorBoundary }) => {
   const handleClick = () => {
     resetErrorBoundary();
     window.location.reload();

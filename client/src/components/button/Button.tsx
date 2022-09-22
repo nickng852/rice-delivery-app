@@ -1,4 +1,14 @@
-const Button = ({ value, text, icon, onClick, disabled }) => {
+import { FC } from "react";
+
+interface Props {
+  value?: string;
+  text: string;
+  icon?: JSX.Element;
+  onClick: () => void;
+  disabled?: boolean;
+}
+
+const Button: FC<Props> = ({ value, text, icon, onClick, disabled }) => {
   return (
     <button
       type="button"

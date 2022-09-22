@@ -1,6 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 
-import { robotApi } from "services/robotApi";
+import { robotApi } from "../services/robotApi";
 
 export const store = configureStore({
   reducer: { [robotApi.reducerPath]: robotApi.reducer },

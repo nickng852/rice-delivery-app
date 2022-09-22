@@ -1,6 +1,14 @@
-import React from "react";
+import { FC } from "react";
 
-const Dropdown = ({
+interface Props {
+  labelText: string;
+  value: string;
+  defaultOption: string;
+  options: any[] | null;
+  handleChange: (e: any) => void;
+}
+
+const Dropdown: FC<Props> = ({
   labelText,
   value,
   defaultOption,
@@ -21,7 +29,7 @@ const Dropdown = ({
         className="block w-full rounded-lg border-none bg-white py-3 px-4 text-base text-gray-900 shadow-sm drop-shadow-sm focus:ring-0 dark:border-gray-600 dark:bg-tertiary dark:text-white"
         onChange={handleChange}
       >
-        <option defaultValue>{defaultOption}</option>
+        <option value="">{defaultOption}</option>
         {options &&
           options.map((option, index) => {
             return (

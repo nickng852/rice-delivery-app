@@ -1,9 +1,19 @@
+import { FC } from "react";
+
 import Spin from "../animate/Spin";
 
 // Translation
 import { useTranslation } from "react-i18next";
 
-const Card = ({ text, icon, value }) => {
+interface Props {
+  value: string;
+  text: string;
+  icon?: JSX.Element;
+}
+
+const Card: FC<Props> = ({ value, text, icon }) => {
+  console.log(icon);
+
   const { t } = useTranslation();
 
   return (

@@ -1,14 +1,15 @@
+import React from "react";
 import { useState, useEffect } from "react";
 
 // Translation
 import { useTranslation } from "react-i18next";
 
 // Components
-import Spinner from "components/loader/Spinner";
-import Card from "components/card/Card";
-import Button from "components/button/Button";
-import Dropdown from "components/dropdown/Dropdown";
-import Modal from "components/modal/ErrorModal";
+import Spinner from "../components/loader/Spinner";
+import Card from "../components/card/Card";
+import Button from "../components/button/Button";
+import Dropdown from "../components/dropdown/Dropdown";
+import Modal from "../components/modal/ErrorModal";
 
 // FontAwesome
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -25,27 +26,27 @@ import {
   useGetMapWaypointsQuery,
   usePostLidMutation,
   usePostGoalMutation,
-} from "services/robotApi";
+} from "../services/robotApi";
 
 // Utils
-import { upperCaseFirstChar } from "utils/wordFormatter";
+import { upperCaseFirstChar } from "../utils/wordFormatter";
 
 const MainPage = () => {
   // Translation
   const { t, i18n } = useTranslation();
 
-  const [waypoints, setWaypoints] = useState("");
+  const [waypoints, setWaypoints] = useState(null);
   const [currentLocation, setCurrentLocation] = useState("Home");
   const [targetLocation, setTargetLocation] = useState("");
   const [lid, setLid] = useState("");
   const [deliveryStatus, setDeliveryStatus] = useState("Stand By");
-  const [error, setError] = useState(null);
-  const [reminder, setReminder] = useState(null);
+  const [error, setError] = useState<string>("");
+  const [reminder, setReminder] = useState<string | null>(null);
 
   // API
-  const { data: status, isFetching: isStatusFetching } = useGetStatusQuery();
+  const { data: status, isFetching: isStatusFetching } = useGetStatusQuery("");
   const { data: mapWaypoints, isFetching: isMapWaypointsFetching } =
-    useGetMapWaypointsQuery();
+    useGetMapWaypointsQuery("");
   const [postLid, { isLoading: isLidPosting }] = usePostLidMutation();
   const [postGoal, { isLoading: isGoalPosting }] = usePostGoalMutation();
 
@@ -181,7 +182,7 @@ const MainPage = () => {
     deliveryStatus,
   ]);
 
-  const getDeliveryStatusTranslation = (value) => {
+  const getDeliveryStatusTranslation = (value: string) => {
     switch (value) {
       case "Ready to fill":
         return t("readyToFill");
@@ -200,6 +201,14 @@ const MainPage = () => {
     }
   };
 
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    i18n.changeLanguage((e.target as HTMLInputElement).value);
+  };
+
+  const handleChange = (e: any) => {
+    setTargetLocation(e.target.value);
+  };
+
   return (
     <main className="flex flex-col justify-center portrait:h-full lg:landscape:h-full">
       {!isStatusFetching && !isMapWaypointsFetching && (
@@ -208,21 +217,15 @@ const MainPage = () => {
             <div className="flex space-x-4">
               <button
                 value="en"
-                text={"English"}
                 className="cursor-pointer text-sm dark:text-white md:text-base md:font-medium"
-                onClick={(e) => {
-                  i18n.changeLanguage(e.target.value);
-                }}
+                onClick={handleClick}
               >
                 English
               </button>
               <button
                 value="tc"
-                text={"繁體中文"}
                 className="cursor-pointer text-sm dark:text-white md:text-base md:font-medium"
-                onClick={(e) => {
-                  i18n.changeLanguage(e.target.value);
-                }}
+                onClick={handleClick}
               >
                 繁體中文
               </button>
@@ -271,9 +274,7 @@ const MainPage = () => {
               value={targetLocation}
               defaultOption={t("chooseDestination")}
               options={waypoints}
-              handleChange={(e) => {
-                setTargetLocation(e.target.value);
-              }}
+              handleChange={handleChange}
             />
             <Button
               text={t("go")}

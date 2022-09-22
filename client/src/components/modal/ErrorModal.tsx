@@ -1,6 +1,14 @@
+import { FC } from "react";
+
 import { useState, useEffect } from "react";
 
-const Modal = ({ error, setError, text }) => {
+interface Props {
+  error: string;
+  setError: (error: string) => void;
+  text: string;
+}
+
+const Modal: FC<Props> = ({ error, setError, text }) => {
   const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
@@ -13,7 +21,7 @@ const Modal = ({ error, setError, text }) => {
 
   const modalToggle = () => {
     setModalOpen(!modalOpen);
-    setError(null);
+    setError("");
   };
 
   return (
@@ -21,7 +29,7 @@ const Modal = ({ error, setError, text }) => {
       {modalOpen && (
         <div
           id="popup-modal"
-          tabIndex="-1"
+          tabIndex={-1}
           className="absolute inset-0 flex items-center justify-center"
           aria-hidden="true"
         >

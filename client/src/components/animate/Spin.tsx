@@ -1,7 +1,13 @@
+import { FC } from "react";
+
 // Translation
 import { useTranslation } from "react-i18next";
 
-const Spin = ({ value }) => {
+interface Props {
+  value: string;
+}
+
+const Spin: FC<Props> = ({ value }) => {
   const { t } = useTranslation();
 
   return (
