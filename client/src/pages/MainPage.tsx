@@ -28,9 +28,6 @@ import {
   usePostGoalMutation,
 } from "../services/robotApi";
 
-// Utils
-import { upperCaseFirstChar } from "../utils/wordFormatter";
-
 const MainPage = () => {
   // Translation
   const { t, i18n } = useTranslation();
@@ -44,9 +41,16 @@ const MainPage = () => {
   const [reminder, setReminder] = useState<string | null>(null);
 
   // API
-  const { data: status, isFetching: isStatusFetching } = useGetStatusQuery("");
-  const { data: mapWaypoints, isFetching: isMapWaypointsFetching } =
-    useGetMapWaypointsQuery("");
+  const {
+    data: status,
+    isFetching: isStatusFetching,
+    isSuccess: isStatusFetchingSuccess,
+  } = useGetStatusQuery("");
+  const {
+    data: mapWaypoints,
+    isFetching: isMapWaypointsFetching,
+    isSuccess: isMapWaypointsFetchingSuccess,
+  } = useGetMapWaypointsQuery("");
   const [postLid, { isLoading: isLidPosting }] = usePostLidMutation();
   const [postGoal, { isLoading: isGoalPosting }] = usePostGoalMutation();
 
@@ -121,9 +125,9 @@ const MainPage = () => {
 
   // Set State after API call
   useEffect(() => {
-    if (upperCaseFirstChar(status?.lid) === "Open") {
+    if (status?.lid === "Open") {
       setLid("Open");
-    } else if (upperCaseFirstChar(status?.lid) === "Close") {
+    } else if (status?.lid === "Close") {
       setLid("Close");
     }
 
@@ -211,7 +215,7 @@ const MainPage = () => {
 
   return (
     <main className="flex flex-col justify-center portrait:h-full lg:landscape:h-full">
-      {!isStatusFetching && !isMapWaypointsFetching && (
+      {isStatusFetchingSuccess && isMapWaypointsFetchingSuccess && (
         <>
           <div className="space-y-4">
             <div className="flex space-x-4">
@@ -234,27 +238,47 @@ const MainPage = () => {
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
               <Card
                 text={t("status")}
-                value={status?.online ? t("online") : t("offline")}
+                value={
+                  status ? (status?.online ? t("online") : t("offline")) : "-"
+                }
               />
               <Card
                 text={t("charge")}
-                value={status?.charging ? t("charging") : t("notCharging")}
+                value={
+                  status
+                    ? status?.charging
+                      ? t("charging")
+                      : t("notCharging")
+                    : "-"
+                }
               />
-              <Card text={t("batteryLevel")} value={status?.charge + "%"} />
+              <Card
+                text={t("batteryLevel")}
+                value={status ? status?.charge + "%" : "-"}
+              />
               <Card
                 text={t("currentLocation")}
                 icon={<FontAwesomeIcon icon={faLocationDot} />}
-                value={currentLocation}
+                value={status ? currentLocation : "-"}
               />
               <Card
                 text={t("lidStatus")}
-                value={lid === "Open" ? t("lidOpen") : t("lidClose")}
+                value={
+                  status
+                    ? status?.lid === "Open"
+                      ? t("lidOpen")
+                      : t("lidClose")
+                    : "-"
+                }
               />
               <Card
                 text={t("deliveryStatus")}
-                value={getDeliveryStatusTranslation(deliveryStatus)}
+                value={
+                  status ? getDeliveryStatusTranslation(deliveryStatus) : "-"
+                }
               />
             </div>
+
             <div className="space-y-4 md:flex md:space-x-4 md:space-y-0">
               <Button
                 text={t("openLid")}
@@ -269,6 +293,7 @@ const MainPage = () => {
                 disabled={lid === "Close"}
               />
             </div>
+
             <Dropdown
               labelText={t("chooseDestination")}
               value={targetLocation}
@@ -285,22 +310,15 @@ const MainPage = () => {
         </>
       )}
 
-      {isGoalPosting && (
+      {(isStatusFetching ||
+        isMapWaypointsFetching ||
+        isLidPosting ||
+        isGoalPosting) && (
         <>
           <main className="absolute inset-0 flex flex-col items-center justify-center space-y-4 bg-white dark:bg-primary">
             <Spinner />
-            <div className="text-sm dark:text-white md:text-base">
-              {reminder}
-            </div>
-          </main>
-        </>
-      )}
 
-      {(isStatusFetching || isMapWaypointsFetching || isLidPosting) && (
-        <>
-          <main className="absolute inset-0 flex flex-col items-center justify-center space-y-4 bg-white dark:bg-primary">
-            <Spinner />
-            {isLidPosting && (
+            {(isLidPosting || isGoalPosting) && (
               <div className="text-sm dark:text-white md:text-base">
                 {reminder}
               </div>

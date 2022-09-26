@@ -12,8 +12,6 @@ interface Props {
 }
 
 const Card: FC<Props> = ({ value, text, icon }) => {
-  console.log(icon);
-
   const { t } = useTranslation();
 
   return (
