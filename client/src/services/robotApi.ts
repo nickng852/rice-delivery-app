@@ -1,6 +1,9 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-const baseUrl: string = "http://localhost:3001/";
+const baseUrl: string =
+  process.env.NODE_ENV === "production"
+    ? "https://rice-delivery-app.herokuapp.com/"
+    : "http://localhost:3001/";
 
 export const robotApi = createApi({
   reducerPath: "robotApi",
