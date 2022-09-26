@@ -264,11 +264,7 @@ const MainPage = () => {
               <Card
                 text={t("lidStatus")}
                 value={
-                  status
-                    ? status?.lid === "Open"
-                      ? t("lidOpen")
-                      : t("lidClose")
-                    : "-"
+                  status ? (lid === "Open" ? t("lidOpen") : t("lidClose")) : "-"
                 }
               />
               <Card
