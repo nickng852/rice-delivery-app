@@ -11,7 +11,7 @@
         "server": "^1.0.4"
     },
     "scripts": {
-        "start": "node server.js"
+        "start": "node index.js"
     },
     "browserslist": {
         "production": [
